@@ -23,6 +23,9 @@ exports.signup_student = [
     .withMessage("Lastname should be between 2-20 characters")
     .isAlphanumeric()
     .withMessage("Lastname should only contain alphanumeric characters"),
+  body("institution", "Institution name is required")
+    .trim()
+    .isLength({ min: 1 }),
   body("email")
     .trim()
     .isEmail()
@@ -53,6 +56,7 @@ exports.signup_student = [
         firstName: req.body.firstname,
         lastName: req.body.lastname,
         email: req.body.email,
+        institution: req.body.institution,
         password: hashedPassword,
       });
 

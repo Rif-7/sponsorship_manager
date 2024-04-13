@@ -5,6 +5,7 @@ const Sponsorship = require("../models/Sponsorship");
 exports.request_sponsorship = [
   body("name", "Name is required").trim().isLength({ min: 1 }),
   body("amount", "Amount is required").exists().isNumeric(),
+  body("description", "Description is required").trim().isLength({ min: 1 }),
   async (req, res, next) => {
     try {
       if (req.user.isSponsor) {
@@ -22,6 +23,7 @@ exports.request_sponsorship = [
       const sponsorship = new Sponsorship({
         name: req.body.name,
         amount: req.body.amount,
+        description: req.body.description,
         student: req.user._id,
       });
 
@@ -79,7 +81,7 @@ exports.get_all_sponsorship_requests = async (req, res, next) => {
     }
     const sponsorship_list = await Sponsorship.find({ sponsor: null }).populate(
       "student",
-      "firstName lastName email"
+      "firstName lastName email institution"
     );
     return res.status(200).json({ sponsorship_list });
   } catch (err) {
@@ -95,7 +97,7 @@ exports.get_accepted_sponsorships = async (req, res, next) => {
     }
     const sponsorship_list = await Sponsorship.find({
       sponsor: req.user._id,
-    }).populate("student", "firstName lastName email");
+    }).populate("student", "firstName lastName email institution");
     return res.status(200).json({ sponsorship_list });
   } catch (err) {
     return next(err);

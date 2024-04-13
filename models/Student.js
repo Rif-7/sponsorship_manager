@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 const StudentSchema = new Schema({
   firstName: { type: String, required: true, minLength: 2, maxLength: 20 },
   lastName: { type: String, required: true, minLength: 2, maxLength: 20 },
+  institution: { type: String, required: true },
   email: {
     type: String,
     required: true,
