@@ -73,6 +73,51 @@ exports.signup_student = [
   },
 ];
 
+exports.login_student = [
+  body("email")
+    .trim()
+    .isEmail()
+    .withMessage("Invalid Email")
+    .escape()
+    .custom(async (email, { req }) => {
+      const user = await Student.findOne({ email });
+      if (!user) {
+        throw new Error("User not found");
+      }
+      req.user = user;
+    }),
+  body("password")
+    .isString()
+    .withMessage("Invalid format")
+    .trim()
+    .isLength({ min: 6 })
+    .withMessage("Password should be atleast 6 characters")
+    .custom(async (password, { req }) => {
+      const isPassword = await comparePassword(password, req.user.password);
+      if (!isPassword) {
+        throw new Error("Incorrect Password");
+      }
+    }),
+  async (req, res, next) => {
+    try {
+      let errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        errors = errors.formatWith((error) => error.msg);
+        return res.status(400).json({ error: errors.array()[0] });
+      }
+
+      const payload = {
+        sub: req.user.id,
+      };
+
+      const token = jwt.sign(payload, process.env.JWT_SECRET);
+      return res.status(200).json({ token });
+    } catch (err) {
+      return next(err);
+    }
+  },
+];
+
 exports.signup_sponsor = [
   body("company")
     .isString()
@@ -136,51 +181,6 @@ exports.signup_sponsor = [
   },
 ];
 
-exports.login_student = [
-  body("email")
-    .trim()
-    .isEmail()
-    .withMessage("Invalid Email")
-    .escape()
-    .custom(async (email, { req }) => {
-      const user = await Student.findOne({ email });
-      if (!user) {
-        throw new Error("User not found");
-      }
-      req.user = user;
-    }),
-  body("password")
-    .isString()
-    .withMessage("Invalid format")
-    .trim()
-    .isLength({ min: 6 })
-    .withMessage("Password should be atleast 6 characters")
-    .custom(async (password, { req }) => {
-      const isPassword = await comparePassword(password, req.user.password);
-      if (!isPassword) {
-        throw new Error("Incorrect Password");
-      }
-    }),
-  async (req, res, next) => {
-    try {
-      let errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        errors = errors.formatWith((error) => error.msg);
-        return res.status(400).json({ error: errors.array()[0] });
-      }
-
-      const payload = {
-        sub: req.user.id,
-      };
-
-      const token = jwt.sign(payload, process.env.JWT_SECRET);
-      return res.status(200).json({ token });
-    } catch (err) {
-      return next(err);
-    }
-  },
-];
-
 exports.login_sponsor = [
   body("email")
     .trim()
@@ -226,3 +226,42 @@ exports.login_sponsor = [
     }
   },
 ];
+
+exports.get_student_info = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(400).json({ error: "User is not authenticated." });
+    }
+    if (req.isSponsor) {
+      return res.status(409).json({ error: "User is a sponsor account." });
+    }
+
+    return res.status(200).json({
+      firstname: req.user.firstName,
+      lastname: req.user.lastName,
+      institution: req.user.institution,
+      email: req.user.email,
+    });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+exports.get_sponsor_info = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(400).json({ error: "User is not authenticated." });
+    }
+    if (!req.isSponsor) {
+      return res.status(409).json({ error: "User is a student account." });
+    }
+
+    return res.status(200).json({
+      company: req.user.company,
+      contact: req.user.contact,
+      email: req.user.email,
+    });
+  } catch (err) {
+    return next(err);
+  }
+};

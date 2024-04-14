@@ -8,13 +8,13 @@ exports.request_sponsorship = [
   body("description", "Description is required").trim().isLength({ min: 1 }),
   async (req, res, next) => {
     try {
-      if (req.user.isSponsor) {
+      if (req.isSponsor) {
         return res
           .status(409)
           .json({ error: "Sponsors can't request sponsorships." });
       }
 
-      const errors = validationResult(req);
+      let errors = validationResult(req);
       if (!errors.isEmpty()) {
         errors = errors.formatWith((error) => error.msg);
         return res.status(400).json({ error: errors.array()[0] });
@@ -39,7 +39,7 @@ exports.request_sponsorship = [
 
 exports.accept_sponsorship = async (req, res, next) => {
   try {
-    if (!req.user.isSponsor) {
+    if (!req.isSponsor) {
       return res
         .status(409)
         .json({ error: "Students can't accept sponsorships." });
@@ -76,7 +76,7 @@ exports.accept_sponsorship = async (req, res, next) => {
 // get's all sponsorship requests waiting to be accepted
 exports.get_all_sponsorship_requests = async (req, res, next) => {
   try {
-    if (!req.user.isSponsor) {
+    if (!req.isSponsor) {
       return res.status(400).json({ error: "User is not a sponsor" });
     }
     const sponsorship_list = await Sponsorship.find({ sponsor: null }).populate(
@@ -92,7 +92,7 @@ exports.get_all_sponsorship_requests = async (req, res, next) => {
 // get's all sponsorships accepted by the current sponsor
 exports.get_accepted_sponsorships = async (req, res, next) => {
   try {
-    if (!req.user.isSponsor) {
+    if (!req.isSponsor) {
       return res.status(400).json({ error: "User is not a sponsor" });
     }
     const sponsorship_list = await Sponsorship.find({
@@ -107,7 +107,7 @@ exports.get_accepted_sponsorships = async (req, res, next) => {
 // get's all sponsorships requested by the current user
 exports.get_requested_sponsorships = async (req, res, next) => {
   try {
-    if (req.user.isSponsor) {
+    if (req.isSponsor) {
       return res.status(400).json({ error: "User is not a student" });
     }
 

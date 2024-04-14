@@ -3,11 +3,6 @@ var router = express.Router();
 const sponsorship_controller = require("../controllers/sponsorshipController");
 const { ensureAuth } = require("../utils/auth");
 
-/* GET home page. */
-router.get("/", function (req, res, next) {
-  res.json({ hello: "hello" });
-});
-
 router.post("/", ensureAuth, sponsorship_controller.request_sponsorship);
 router.get(
   "/sponsorships/requested",
