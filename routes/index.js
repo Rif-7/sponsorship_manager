@@ -15,6 +15,12 @@ router.post(
   ensureAuth,
   sponsorship_controller.accept_sponsorship
 );
+router.delete(
+  "/:sponsorship_id",
+  ensureAuth,
+  sponsorship_controller.remove_sponsorship
+);
+
 router.get(
   "/sponsorships/all",
   ensureAuth,

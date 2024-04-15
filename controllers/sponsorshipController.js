@@ -119,3 +119,31 @@ exports.get_requested_sponsorships = async (req, res, next) => {
     return next(err);
   }
 };
+
+exports.remove_sponsorship = async (req, res, next) => {
+  try {
+    if (req.isSponsor) {
+      return res
+        .status(409)
+        .json({ error: "Sponsors can't remove sponsorships." });
+    }
+    if (
+      !req.params.sponsorship_id ||
+      !mongoose.Types.ObjectId.isValid(req.params.sponsorship_id)
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Sponsorship ID is either missing or invalid." });
+    }
+
+    await Sponsorship.findOneAndDelete({
+      _id: req.params.sponsorship_id,
+      student: req.user._id,
+    });
+    return res
+      .status(200)
+      .json({ success: "Sponsorship removed successfuly." });
+  } catch (err) {
+    return next(err);
+  }
+};
