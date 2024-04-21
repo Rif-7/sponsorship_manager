@@ -56,3 +56,13 @@ exports.ensureAuth = (req, res, next) => {
     return next();
   })(req, res, next);
 };
+
+exports.adminAuth = (req, res, next) => {
+  if (!req.body.admin) {
+    return res.status(401).json({ error: "Admin password is missing" });
+  } else if (req.body.admin !== process.env.ADMIN_PASS) {
+    return res.status(401).json({ error: "Admin password is incorrect" });
+  }
+
+  return next();
+};
