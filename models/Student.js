@@ -22,7 +22,9 @@ StudentSchema.virtual("fullname").get(function () {
 
 StudentSchema.virtual("certificate_url").get(function () {
   if (this.certificate) {
-    return `${process.env.BACKEND_URL}/uploads/${this.certificate}`;
+    return `${process.env.BACKEND_URL || "http://localhost:4000"}/uploads/${
+      this.certificate
+    }`;
   }
   return "";
 });
