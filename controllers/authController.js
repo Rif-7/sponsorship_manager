@@ -241,6 +241,7 @@ exports.get_student_info = async (req, res, next) => {
       lastname: req.user.lastName,
       institution: req.user.institution,
       email: req.user.email,
+      certificate: req.user.certificate_url,
     });
   } catch (err) {
     return next(err);

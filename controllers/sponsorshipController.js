@@ -1,6 +1,24 @@
 const { body, validationResult } = require("express-validator");
 const mongoose = require("mongoose");
 const Sponsorship = require("../models/Sponsorship");
+const Student = require("../models/Student");
+const path = require("path");
+const { v4: uuidv4 } = require("uuid");
+const multer = require("multer");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
+
+// Multer configuration
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/"); // Specify the folder where you want to save the images
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    const filename = uuidv4() + ext; // Generate a UUID and append the file extension
+    cb(null, filename);
+  },
+});
+const upload = multer({ storage: storage });
 
 exports.request_sponsorship = [
   body("name", "Name is required").trim().isLength({ min: 1 }),
@@ -81,7 +99,7 @@ exports.get_all_sponsorship_requests = async (req, res, next) => {
     }
     const sponsorship_list = await Sponsorship.find({ sponsor: null }).populate(
       "student",
-      "firstName lastName email institution"
+      "-password"
     );
     return res.status(200).json({ sponsorship_list });
   } catch (err) {
@@ -97,7 +115,7 @@ exports.get_accepted_sponsorships = async (req, res, next) => {
     }
     const sponsorship_list = await Sponsorship.find({
       sponsor: req.user._id,
-    }).populate("student", "firstName lastName email institution");
+    }).populate("student", "-password");
     return res.status(200).json({ sponsorship_list });
   } catch (err) {
     return next(err);
@@ -147,3 +165,31 @@ exports.remove_sponsorship = async (req, res, next) => {
     return next(err);
   }
 };
+
+exports.upload_student_certificate = [
+  upload.single("image"),
+  async (req, res, next) => {
+    try {
+      if (req.user.isSponsor) {
+        return res
+          .status(409)
+          .json({ error: "Sponsor accounts can't upload certificates." });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ error: "Certificate not found" });
+      }
+
+      const user = await Student.findById(req.user._id);
+      user.certificate = req.file.filename;
+      await user.save();
+
+      const imageURL = `${
+        process.env?.BACKEND_URL || "http://localhost:4000"
+      }/uploads/${req.file.filename}`;
+      res.json({ imageURL });
+    } catch (err) {
+      return next(err);
+    }
+  },
+];

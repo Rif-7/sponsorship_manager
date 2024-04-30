@@ -11,6 +11,12 @@ router.get(
 );
 
 router.post(
+  "/certificate",
+  ensureAuth,
+  sponsorship_controller.upload_student_certificate
+);
+
+router.post(
   "/:sponsorship_id",
   ensureAuth,
   sponsorship_controller.accept_sponsorship
