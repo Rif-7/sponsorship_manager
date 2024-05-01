@@ -3,16 +3,16 @@ const router = express.Router();
 const admin_controller = require("../controllers/adminController");
 const { adminAuth } = require("../utils/auth");
 
-router.get("/sponsors", adminAuth, admin_controller.get_all_sponsors);
-router.get("/students", adminAuth, admin_controller.get_all_students);
-router.get("/sponsorships", adminAuth, admin_controller.get_all_sponsorships);
+router.post("/sponsors", adminAuth, admin_controller.get_all_sponsors);
+router.post("/students", adminAuth, admin_controller.get_all_students);
+router.post("/sponsorships", adminAuth, admin_controller.get_all_sponsorships);
 
-router.get(
+router.post(
   "/sponsors/:sponsor_id",
   adminAuth,
   admin_controller.get_sponsorships_by_sponsor
 );
-router.get(
+router.post(
   "/students/:student_id",
   adminAuth,
   admin_controller.get_sponsorships_by_student
